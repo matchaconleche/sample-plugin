@@ -2,6 +2,7 @@
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using System.IO;
+using Dalamud.Game.DutyState;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using SamplePlugin.Windows;
@@ -10,6 +11,8 @@ namespace SamplePlugin;
 
 public sealed class Plugin : IDalamudPlugin
 {
+    
+    // dependency injection
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
@@ -17,6 +20,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
+    [PluginService] internal static IDutyState DutyState { get; private set; } = null!;
 
     private const string CommandName = "/pmycommand";
 
@@ -58,14 +62,26 @@ public sealed class Plugin : IDalamudPlugin
         // Use /xllog to open the log window in-game
         // Example Output: 00:57:54.959 | INF | [SamplePlugin] ===A cool log message from Sample Plugin===
         Log.Information($"===A cool log message from {PluginInterface.Manifest.Name}===");
+        
+        DutyState.DutyCompleted += DutyStateOnDutyCompleted;
+    }
+
+    private void DutyStateOnDutyCompleted(IDutyStateEventArgs args)
+    {
+        if (ClientState.LocalPlayer == null) return; // guard clause, from our nullable discussion
+    
+        Chat.Print($"Congrats on reaching level {level}!"); // IChatGui.Print
     }
 
     public void Dispose()
     {
         // Unregister all actions to not leak anything during disposal of plugin
+        DutyState.DutyCompleted -= DutyStateOnDutyCompleted;
+        
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
+        
         
         WindowSystem.RemoveAllWindows();
 
