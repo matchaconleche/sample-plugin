@@ -21,6 +21,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
     [PluginService] internal static IDutyState DutyState { get; private set; } = null!;
+    [PluginService] public static IChatGui ChatGui { get; private set; } = null!;
 
     private const string CommandName = "/pmycommand";
 
@@ -68,9 +69,12 @@ public sealed class Plugin : IDalamudPlugin
 
     private void DutyStateOnDutyCompleted(IDutyStateEventArgs args)
     {
-        if (ClientState.LocalPlayer == null) return; // guard clause, from our nullable discussion
-    
-        Chat.Print($"Congrats on reaching level {level}!"); // IChatGui.Print
+        if (!PlayerState.IsLoaded) return; 
+        
+        Log.Info($"======Duty completed======");
+        Log.Info($"{args}");
+        
+        ChatGui.Print($"A duty has been completed!");
     }
 
     public void Dispose()
