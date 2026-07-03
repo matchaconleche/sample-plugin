@@ -22,7 +22,6 @@ public class ConfigWindow : Window, IDisposable
 
         configuration = plugin.Configuration;
     }
-
     public void Dispose() { }
 
     public override void PreDraw()
